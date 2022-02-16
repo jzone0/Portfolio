@@ -1,1 +1,1 @@
-# portfolio
+# My corpus will be on John Mayer, specifically his albums. I am an avid listener and quite a fan of John Mayer so studying and analyzing his music would of course be an interesting topic for me. With eight studio albums, John Mayer has a well-rounded discography that arguably spans across many different genres such as blues, pop, folk, and country. These albums will be the focus of comparison for this project as each one is based in a different genre.
