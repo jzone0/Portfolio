@@ -1,2 +1,4 @@
 # My corpus will be on John Mayer, specifically his albums. I am an avid listener and quite a fan of John Mayer so studying and analyzing his music would of course be an interesting topic for me. With eight studio albums, John Mayer has a well-rounded discography that arguably spans across many different genres such as blues, pop, folk, and country. These albums will be the focus of comparison for this project as each one is based in a different genre.
 A line I wrote on my local computer  
+
+# There are several ways in which this investigation can be conducted. Firstly, I could compare each album using the Spotify API categories, or I could analyse each album and match it to genre it fits in most based on its Spotify API results
