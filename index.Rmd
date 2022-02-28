@@ -2,29 +2,211 @@
 title: "JM vs Genre"
 author: "Jason M. Jolink"
 date: "2/23/2022"
-output: html_document
+output: 
+        flexdashboard::flex_dashboard:
+          storyboard: true
+        vertical_layout: scrolling
+        theme: plotly
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(spotifyr)
+library(plotly)
+library(ggplot2)
+library(tidyverse)
+library(knitr)
+
+Sys.setenv(SPOTIFY_CLIENT_ID = '1d0f7f8e56764a23ac0d6e6e19854863')
+Sys.setenv(SPOTIFY_CLIENT_SECRET = '4b54a9da7d0448eaa1d69f2d67284d90')
+
+access_token <- get_spotify_access_token()
+
+room_for_squares <- get_album_tracks(
+  "3yHOaiXecTJVUdn7mApZ48",
+  limit = 20,
+  offset = 0,
+  market = NULL,
+  authorization = get_spotify_access_token(),
+  include_meta_info = FALSE
+)
+
+track_info_rfs <- get_track_audio_features(room_for_squares$id)
+track_info_rfs
+
+heavier_things <- get_album_tracks(
+  "6WivmTXugLZLmAWnZhlz7g",
+  limit = 20,
+  offset = 0,
+  market = NULL,
+  authorization = get_spotify_access_token(),
+  include_meta_info = FALSE
+)
+
+track_info_hvt <- get_track_audio_features(heavier_things$id)
+track_info_hvt
+
+continuum <- get_album_tracks(
+  "1Xsprdt1q9rOzTic7b9zYM",
+  limit = 20,
+  offset = 0,
+  market = NULL,
+  authorization = get_spotify_access_token(),
+  include_meta_info = FALSE
+)
+
+track_info_con <- get_track_audio_features(continuum$id)
+track_info_con
+
+battle_studies <- get_album_tracks(
+  "1V5vQRMWTNGmqwxY8jMVou",
+  limit = 20,
+  offset = 0,
+  market = NULL,
+  authorization = get_spotify_access_token(),
+  include_meta_info = FALSE
+)
+
+track_info_bts <- get_track_audio_features(battle_studies$id)
+track_info_bts
+
+born_and_raised <- get_album_tracks(
+  "6S0BIiWtnqU0PtumXMpin0",
+  limit = 20,
+  offset = 0,
+  market = NULL,
+  authorization = get_spotify_access_token(),
+  include_meta_info = FALSE
+)
+
+track_info_bnr <- get_track_audio_features(born_and_raised$id)
+track_info_bnr
+
+paradise_valley <- get_album_tracks(
+  "712VoD72K500yLhhgqCyVe",
+  limit = 20,
+  offset = 0,
+  market = NULL,
+  authorization = get_spotify_access_token(),
+  include_meta_info = FALSE
+)
+
+track_info_pdv <- get_track_audio_features(paradise_valley$id)
+track_info_pdv
+
+the_search_for_everything <- get_album_tracks(
+  "0jZFu2tihRJ65iYAo0oOtP",
+  limit = 20,
+  offset = 0,
+  market = NULL,
+  authorization = get_spotify_access_token(),
+  include_meta_info = FALSE
+)
+
+track_info_sfe <- get_track_audio_features(the_search_for_everything$id)
+track_info_sfe
+
+sob_rock <- get_album_tracks(
+  "2JmfwvRDitJlTUoLCkp61z",
+  limit = 20,
+  offset = 0,
+  market = NULL,
+  authorization = get_spotify_access_token(),
+  include_meta_info = FALSE
+)
+
+track_info_sbr <- get_track_audio_features(sob_rock$id)
+track_info_sbr
+
+mayer_raw <- rbind(track_info_rfs, track_info_hvt, track_info_con, track_info_bts, 
+               track_info_bnr, track_info_pdv, track_info_sfe, track_info_sbr)
+
+rfs <- track_info_rfs %>%
+  summarise(room_for_squares$data, 
+            meanDanceability = mean(danceability), 
+            meanEnergy = mean(energy),
+            meanValence = mean(valence),
+            meanDuration = mean(duration_ms))
+
+hvt <- track_info_hvt %>%
+  summarise(heavier_things$data, 
+            meanDanceability = mean(danceability), 
+            meanEnergy = mean(energy),
+            meanValence = mean(valence),
+            meanDuration = mean(duration_ms))
+
+con <- track_info_con %>%
+  summarise(continuum$data, 
+            meanDanceability = mean(danceability), 
+            meanEnergy = mean(energy),
+            meanValence = mean(valence),
+            meanDuration = mean(duration_ms))
+
+bts <- track_info_bts %>%
+  summarise(battle_studies$data, 
+            meanDanceability = mean(danceability), 
+            meanEnergy = mean(energy),
+            meanValence = mean(valence),
+            meanDuration = mean(duration_ms))
+
+bnr <- track_info_bnr %>%
+  summarise(born_and_raised$data, 
+            meanDanceability = mean(danceability), 
+            meanEnergy = mean(energy),
+            meanValence = mean(valence),
+            meanDuration = mean(duration_ms))
+
+pdv <- track_info_pdv %>%
+  summarise(paradise_valley$data, 
+            meanDanceability = mean(danceability), 
+            meanEnergy = mean(energy),
+            meanValence = mean(valence),
+            meanDuration = mean(duration_ms))
+
+sfe <- track_info_sfe %>%
+  summarise(the_search_for_everything$data, 
+            meanDanceability = mean(danceability), 
+            meanEnergy = mean(energy),
+            meanValence = mean(valence),
+            meanDuration = mean(duration_ms))
+
+sbr <- track_info_sbr %>%
+  summarise(sob_rock$data, 
+            meanDanceability = mean(danceability), 
+            meanEnergy = mean(energy),
+            meanValence = mean(valence),
+            meanDuration = mean(duration_ms))
+
+mayer_average <- rbind(rfs, hvt, con, bts, bnr, pdv, sfe, sbr)
+
 ```
 
-## R Markdown
+Overview
+===========================
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+### Introduction
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+My corpus is on John Mayer, specifically his albums. I am an avid listener and quite a fan of John Mayer so studying and analyzing his music would of course be an interesting topic for me. With eight studio albums, John Mayer has a well-rounded discography that arguably spans across many different genres such as blues, pop, rock, folk, and country. These albums will be the focus of comparison for this project as each one is based in a different genre. 
 
-```{r cars}
-summary(cars)
+![](images/rfs.jpeg){width=12%} ![](images/hvt.jpg){width=12%} ![](images/con.png){width=12%} ![](images/bts.jpeg){width=12%} ![](images/bnr.jpeg){width=12%} ![](images/pdv.jpeg){width=12%} ![](images/sfe.jpeg){width=12%} ![](images/sbr.jpeg){width=12%}
+
+
+
+The objective will essentially aim to identify how well each of John Mayer's albums adhere to their respective genres. An important consideration to note is that John Mayer obviously did not produce each album with the intent of sticking to a single genre. The aim therefore is to see if and how well each album adheres to a respective genre. In addition to this, an analysis will be made on Spotify's "John Mayer Radio" playlist as it is a representation of what Spotify considers to be similiar to John Mayer's music.
+
+
+
+Methodolgy
+========================
+
+### Raw Data
+Using the Spotify API, data from each song off of each album could be pulled and processed.
+
+```{r static_plot}
+
+ggplot(mayer_average, aes(x = meanValence, y = meanEnergy, size = meanDuration, color = meanDanceability)) +
+  geom_point(alpha = 1) +
+  labs(title = "Energy vs Valence of Each Album")
+
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
