@@ -1,7 +1,7 @@
 ---
 title: "JM vs Genre"
 author: "Jason M. Jolink"
-date: "2/23/2022"
+date: "`r Sys.Date()`"
 output: 
         flexdashboard::flex_dashboard:
           storyboard: true
@@ -16,6 +16,7 @@ library(plotly)
 library(ggplot2)
 library(tidyverse)
 library(knitr)
+library(compmus)
 
 Sys.setenv(SPOTIFY_CLIENT_ID = '1d0f7f8e56764a23ac0d6e6e19854863')
 Sys.setenv(SPOTIFY_CLIENT_SECRET = '4b54a9da7d0448eaa1d69f2d67284d90')
@@ -25,6 +26,17 @@ access_token <- get_spotify_access_token()
 dataset_uno <- get_discography('john mayer', 
                 authorization = get_spotify_access_token(client_id = Sys.getenv("SPOTIFY_CLIENT_ID"), 
                                                          client_secret = Sys.getenv("SPOTIFY_CLIENT_SECRET")))
+
+dataset_due <- get_artist_audio_features('john mayer',
+                          include_groups = "album",
+                          return_closest_artist = TRUE,
+                          dedupe_albums = TRUE,
+                          market = NULL,
+                          authorization = get_spotify_access_token(client_id = Sys.getenv("SPOTIFY_CLIENT_ID"), 
+                                                                   client_secret = Sys.getenv("SPOTIFY_CLIENT_SECRET"))) %>%
+                select(-artist_id, -explicit, -type, -track_preview_url, -artists, -album_images, 
+                       -is_local, -analysis_url, -track_href, -disc_number, -available_markets,
+                       -album_release_date_precision, -track_uri)
 
 room_for_squares <- get_album_tracks(
   "3yHOaiXecTJVUdn7mApZ48",
@@ -186,43 +198,112 @@ mayer_average <- rbind(rfs, hvt, con, bts, bnr, pdv, sfe, sbr)
 ```
 
 Overview
-===========================
+============================================
 
 ### Introduction
 
-My corpus is on John Mayer, specifically his albums. I am an avid listener and quite a fan of John Mayer so studying and analyzing his music would of course be an interesting topic for me. With eight studio albums, John Mayer has a well-rounded discography that arguably spans across many different genres such as blues, pop, rock, folk, and country. These albums will be the focus of comparison for this project as each one is based in a different genre. 
+My corpus is on John Mayer, specifically his albums. I am an avid listener so studying and analyzing his music would of course be an interesting topic for me. With eight studio albums, John Mayer has a well-rounded discography that arguably spans across many different genres such as blues, pop, rock, folk, and country. This leaves significant room for analysis into his music. Having a discography that spans across various genres allows for different directions to be taken in terms of investigation. The first possibility is to look into how John Mayer's music has changed over time. The second is that a comparison can be made between one or all of his studio albums and their possible respective genres to conclude how John Mayer adheres to said genre. And lastly, is to conclude if John Mayer follows any trends in his music that allow us to possibly define John Mayer's main genre of music.
 
 ![](images/rfs.jpeg){width=12%} ![](images/hvt.jpg){width=12%} ![](images/con.png){width=12%} ![](images/bts.jpeg){width=12%} ![](images/bnr.jpeg){width=12%} ![](images/pdv.jpeg){width=12%} ![](images/sfe.jpeg){width=12%} ![](images/sbr.jpeg){width=12%}
 
+The objective will essentially aim to anaylze John Mayer's music in various ways. The first level of analysis will be to explore his discography in search of any possible trends. The second level will be to identify how well one or each of John Mayer's albums adhere to their possible genres. The conclusion of this study will be to see if it is possible to summarize John Mayer's music in a single genre. An important consideration to note is that John Mayer obviously did not produce each album with the intent of sticking to a single genre. The aim therefore is to see if and how well each album adheres to a respective genre. In addition to this, an analysis will be made on Spotify's "John Mayer Radio" playlist as it is a representation of what Spotify considers to be similar to John Mayer's music. This will be my second level of analysis. This analysis will show who Spotify associates John Mayer with and it might reveal what, based on which musical elements, this association is based on.
 
+Using the Spotify API, data from each song off of each album can be pulled and analyzed. Important considerations must be accounted for first and foremost. Although the Spotify API is a powerful tool for music analysis, it is not perfect in its analysis of music. Certain criteria are poorly measured or immeasurable for the Spotify API, elements such as emotions and lyricism are difficult to analyze through the software.
 
-The objective will essentially aim to identify how well each of John Mayer's albums adhere to their respective genres. An important consideration to note is that John Mayer obviously did not produce each album with the intent of sticking to a single genre. The aim therefore is to see if and how well each album adheres to a respective genre. In addition to this, an analysis will be made on Spotify's "John Mayer Radio" playlist as it is a representation of what Spotify considers to be similiar to John Mayer's music.
+Preliminary Analysis {.storyboard}
+============================================
 
-Using the Spotify API, data from each song off of each album could be pulled and processed.
-
-
-Methodolgy
-========================
-
-Column {.tabset}
-----------------------------------------------------
-
-### Raw Data
+### An Exploratory Analysis of John Mayer's Discography 
 
 ```{r}
 ggplot(dataset_uno, aes(x = album_release_year, y = valence, size = mode, color = energy)) +
   geom_point(alpha = 0.7) +
-  labs(title = "Valence of John Mayer's music over Time",
-       position = "center")
+  labs(title = "Graph 1: Valence of John Mayer's music over Time",
+       position = "center",
+       x = "Year",
+       y = "Valence")
 ```
 
-### Processed Data
+***
+
+Graph 1 is a representation of the valence of John Mayer's entire discography over time. Based on the data points alone, it is clear that there is little to no correlation or patterns. The only pattern visible in Graph 1 may be shown in the Energy variable. Though weak, a lower amount of energy a track has tends to be lower in valence as well. 
+
+### The Valence of Each Album
 
 ```{r}
+mayer_filtered <- dataset_due %>%
+  filter(album_name == c("Room For Squares", "Heavier Things", "Continuum", "Battle Studies",
+                         "Born and Raised", "Paradise Valley", "The Search For Everything", "Sob Rock"))
 
-ggplot(mayer_average, aes(x = meanValence, y = meanEnergy, size = meanDuration, color = meanDanceability)) +
-  geom_point(alpha = 1) +
-  labs(title = "Energy vs Valence of Each Album")
+ggplot(mayer_filtered, aes(x = album_name, y = valence)) +
+  geom_boxplot() +
+  labs(title = "Valence of Each John Mayer Album",
+       x = "Album",
+       y = "Valence")
 
 ```
 
+
+
+### The Energy of Each Album
+```{r}
+ggplot(mayer_average, aes(x = meanValence, y = meanEnergy, size = meanDuration, color = meanDanceability)) +
+  geom_point(alpha = 1) +
+  labs(title = "Energy vs Valence of Each Album",
+       x = "Mean Valence",
+       y = "Mean Energy",
+       size = " Mean Duration",
+       color = "Mean Danceability")
+```
+
+Comparisons {.storyboard}
+============================================
+
+### Level Two Analysis: Anaylzing Artists suggested by the Spotify algorithms
+
+***
+As mentioned, the second level of analysis will bew to analyze the Spotify-generated playlist "John Mayer Radio in order to see how Spotify categorizes and compares John Mayer's music to other artists and genres.
+
+![](images/jmradio.png){width=30%}
+
+Sob Rock {.storyboard}
+============================================
+
+### Level Three Analysis: Deep Dive into Sob Rock
+
+![](images/sob_rock.jpeg){width=30%, height=30%}
+
+***
+After the initial exploratory analysis of John Mayer's studio albums, his last studio album "Sob Rock" seemed like a good choice to single and analyze further. Various magazines, including [Guitar.com](https://guitar.com/news/music-news/john-mayer-80s-retro-dna-sob-rock/) and [Variety magazine](https://variety.com/2021/music/news/john-mayer-sob-rock-album-review-1235021593/), have already compared the album to 80's pop music based on its tone as well as its aesthetic. 
+
+### Comparing "Shot in the Dark" to 80's pop
+
+```{r}
+shot_in_the_dark <-
+  get_tidy_audio_analysis("239yM7BAQ2CkNc61ogPGXo") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+
+shot_in_the_dark %>%
+  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
+  compmus_gather_chroma() %>% 
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = pitch_class,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", 
+       y = NULL, 
+       fill = "Magnitude",
+       title = "Chromagram of Shot in the Dark") +
+  theme_minimal() +
+  scale_fill_viridis_c()
+```
+
+*** 
+The chromagram to the left shows a spectral analysis of the song "Shot in the Dark", which contains many elements that are associated with the 80s era of music.
