@@ -5,7 +5,7 @@ date: "2/23/2022"
 output: 
         flexdashboard::flex_dashboard:
           storyboard: true
-        vertical_layout: scrolling
+        vertical_layout: scroll
         theme: plotly
 ---
 
@@ -21,6 +21,10 @@ Sys.setenv(SPOTIFY_CLIENT_ID = '1d0f7f8e56764a23ac0d6e6e19854863')
 Sys.setenv(SPOTIFY_CLIENT_SECRET = '4b54a9da7d0448eaa1d69f2d67284d90')
 
 access_token <- get_spotify_access_token()
+
+dataset_uno <- get_discography('john mayer', 
+                authorization = get_spotify_access_token(client_id = Sys.getenv("SPOTIFY_CLIENT_ID"), 
+                                                         client_secret = Sys.getenv("SPOTIFY_CLIENT_SECRET")))
 
 room_for_squares <- get_album_tracks(
   "3yHOaiXecTJVUdn7mApZ48",
@@ -194,15 +198,27 @@ My corpus is on John Mayer, specifically his albums. I am an avid listener and q
 
 The objective will essentially aim to identify how well each of John Mayer's albums adhere to their respective genres. An important consideration to note is that John Mayer obviously did not produce each album with the intent of sticking to a single genre. The aim therefore is to see if and how well each album adheres to a respective genre. In addition to this, an analysis will be made on Spotify's "John Mayer Radio" playlist as it is a representation of what Spotify considers to be similiar to John Mayer's music.
 
+Using the Spotify API, data from each song off of each album could be pulled and processed.
 
 
 Methodolgy
 ========================
 
-### Raw Data
-Using the Spotify API, data from each song off of each album could be pulled and processed.
+Column {.tabset}
+----------------------------------------------------
 
-```{r static_plot}
+### Raw Data
+
+```{r}
+ggplot(dataset_uno, aes(x = album_release_year, y = valence, size = mode, color = energy)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "Valence of John Mayer's music over Time",
+       position = "center")
+```
+
+### Processed Data
+
+```{r}
 
 ggplot(mayer_average, aes(x = meanValence, y = meanEnergy, size = meanDuration, color = meanDanceability)) +
   geom_point(alpha = 1) +
