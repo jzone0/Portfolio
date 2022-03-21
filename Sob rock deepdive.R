@@ -23,6 +23,30 @@ sob_rock <- get_album_tracks(
 track_info_sbr <- get_track_audio_features(sob_rock$id)
 track_info_sbr
 
+ggplot(track_info_sbr, aes(x = tempo, y = energy, color = instrumentalness)) +
+  geom_point() 
+
+eighties_hits <- get_playlist_tracks(
+  "37i9dQZF1DXb57FjYWz00c",
+  limit = 100,
+  offset = 0,
+  market = NULL,
+  authorization = get_spotify_access_token(),
+  include_meta_info = FALSE
+)
+
+eighties_hits_analyzed <- get_playlist_audio_features("11149714474", "37i9dQZF1DXb57FjYWz00c", 
+                                                      authorization = get_spotify_access_token()) %>%
+  select(danceability, energy, key, loudness, mode, speechiness, 
+         acousticness, instrumentalness, liveness, valence, tempo, 
+         track.id, time_signature, track.duration_ms, track.name, 
+         track.popularity, track.artists)
+
+eighties_hits_analyzed
+
+ggplot(eighties_hits_analyzed, aes(x = tempo, y = energy, color = instrumentalness)) +
+  geom_point() 
+
 shot_in_the_dark_chromagram <-
   get_tidy_audio_analysis("239yM7BAQ2CkNc61ogPGXo") %>%
   select(segments) %>%
@@ -132,7 +156,7 @@ key_templates <-
   )
 
 shot_in_the_dark_chordogram <-
-  get_tidy_audio_analysis("5UVsbUV0Kh033cqsZ5sLQi") %>%
+  get_tidy_audio_analysis("239yM7BAQ2CkNc61ogPGXo") %>%
   compmus_align(sections, segments) %>%
   select(sections) %>%
   unnest(sections) %>%
@@ -143,3 +167,16 @@ shot_in_the_dark_chordogram <-
           method = "mean", norm = "manhattan"
       )
   )
+shot_in_the_dark_chordogram %>% 
+  compmus_match_pitch_template(
+    key_templates,        
+    method = "euclidean",
+    norm = "manhattan"    
+  ) %>%
+  ggplot(
+    aes(x = start + duration / 2, width = duration, y = name, fill = d)
+  ) +
+  geom_tile() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "")

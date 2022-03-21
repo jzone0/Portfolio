@@ -213,7 +213,7 @@ Using the Spotify API, data from each song off of each album can be pulled and a
 Preliminary Analysis {.storyboard}
 ============================================
 
-### An Exploratory Analysis of John Mayer's Discography 
+### Level One Analysis: An Exploratory Analysis of John Mayer's Discography 
 
 ```{r}
 ggplot(dataset_uno, aes(x = album_release_year, y = valence, size = mode, color = energy)) +
@@ -243,6 +243,7 @@ ggplot(mayer_filtered, aes(x = album_name, y = valence)) +
 
 ```
 
+***
 
 
 ### The Energy of Each Album
@@ -256,6 +257,8 @@ ggplot(mayer_average, aes(x = meanValence, y = meanEnergy, size = meanDuration, 
        color = "Mean Danceability")
 ```
 
+The third stage of the exploratory analysis is a visualization of the Mean of the key variables used in the previous stage of the exploratory level of analysis. 
+
 Comparisons {.storyboard}
 ============================================
 
@@ -265,6 +268,43 @@ Comparisons {.storyboard}
 ***
 As mentioned, the second level of analysis will be to analyze the Spotify-generated playlist "John Mayer Radio in order to see how Spotify categorizes and compares John Mayer's music to other artists and genres.
 
+### How does Spotify categorise John Mayer's music in comparison to other artists?
+```{r}
+ggplot(mayer_average, aes(x = meanValence, y = meanEnergy, size = meanDuration, color = meanDanceability)) +
+  geom_point(alpha = 1) +
+  geom_smooth() +
+  labs(title = "Energy vs Valence of Each Album",
+       x = "Mean Valence",
+       y = "Mean Energy",
+       size = " Mean Duration",
+       color = "Mean Danceability")
+```
+```{r}
+john_mayer_radio <- get_playlist_tracks(
+  "37i9dQZF1E4zpfzijbifCi", 
+  fields = NULL, 
+  limit = 100, 
+  offset = 0,
+  market = NULL, 
+  authorization = get_spotify_access_token(), 
+  include_meta_info = FALSE
+)
+
+track_info_radio <- get_playlist_audio_features("11149714474", "37i9dQZF1E4zpfzijbifCi", 
+                                                      authorization = get_spotify_access_token()) %>%
+  select(danceability, energy, key, loudness, mode, speechiness, 
+         acousticness, instrumentalness, liveness, valence, tempo, 
+         track.id, time_signature, track.duration_ms, track.name, 
+         track.popularity, track.artists)
+
+ggplot(track_info_radio, aes(x = valence, y = energy, size = track.duration_ms, color = danceability)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "Energy vs Valence of John Mayer Radio",
+       x = "Valence",
+       y = "Energy",
+       size = " Duration",
+       color = "Danceability")
+```
 
 
 Sob Rock {.storyboard}
@@ -277,9 +317,18 @@ Sob Rock {.storyboard}
 ***
 After the initial exploratory analysis of John Mayer's studio albums, his last studio album "Sob Rock" seemed like a good choice to single and analyze further. Various magazines, including [Guitar.com](https://guitar.com/news/music-news/john-mayer-80s-retro-dna-sob-rock/) and [Variety magazine](https://variety.com/2021/music/news/john-mayer-sob-rock-album-review-1235021593/), have already compared the album to 80's pop music based on its tone as well as its aesthetic. 
 
-### Comparing "Shot in the Dark" to 80's pop
+### Sob Rock as a whole
 
 ```{r}
+ggplot(track_info_sbr, aes(x = tempo, y = energy, color = instrumentalness)) +
+  geom_point() +
+  geom_smooth()
+
+```
+
+### Comparing "Shot in the Dark" to 80's pop
+
+```{r, column}
 shot_in_the_dark <-
   get_tidy_audio_analysis("239yM7BAQ2CkNc61ogPGXo") %>%
   select(segments) %>%
@@ -304,7 +353,8 @@ shot_in_the_dark %>%
        title = "Chromagram of Shot in the Dark") +
   theme_minimal() +
   scale_fill_viridis_c()
-
+```
+```{r, fig.width=5}
 circshift <- function(v, n) {
   if (n == 0) v else c(tail(v, n), head(v, -n))
 }
@@ -415,8 +465,9 @@ shot_in_the_dark_chordogram %>%
   geom_tile() +
   scale_fill_viridis_c(guide = "none") +
   theme_minimal() +
-  labs(x = "Time (s)", y = "")
-
+  labs(x = "Time (s)", 
+       y = "",
+       title = "Chordogram of Shot in the Dark")
 ```
 
 *** 
