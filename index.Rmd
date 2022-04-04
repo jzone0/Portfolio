@@ -1,5 +1,5 @@
 ---
-title: "JM vs Genre"
+title: "How 80s is John Mayer's Sob Rock Album?"
 author: "Jason M. Jolink"
 date: "`r Sys.Date()`"
 output: 
@@ -17,111 +17,39 @@ library(ggplot2)
 library(tidyverse)
 library(knitr)
 library(compmus)
+library(heatmaply)
+library(ggdendro)
+library(tidymodels)
+library(protoclust)
 
 Sys.setenv(SPOTIFY_CLIENT_ID = '1d0f7f8e56764a23ac0d6e6e19854863')
 Sys.setenv(SPOTIFY_CLIENT_SECRET = '4b54a9da7d0448eaa1d69f2d67284d90')
 
 access_token <- get_spotify_access_token()
 
-dataset_uno <- get_discography('john mayer', 
-                authorization = get_spotify_access_token(client_id = Sys.getenv("SPOTIFY_CLIENT_ID"), 
-                                                         client_secret = Sys.getenv("SPOTIFY_CLIENT_SECRET")))
+```
 
-dataset_due <- get_artist_audio_features('john mayer',
-                          include_groups = "album",
-                          return_closest_artist = TRUE,
-                          dedupe_albums = TRUE,
-                          market = NULL,
-                          authorization = get_spotify_access_token(client_id = Sys.getenv("SPOTIFY_CLIENT_ID"), 
-                                                                   client_secret = Sys.getenv("SPOTIFY_CLIENT_SECRET"))) %>%
-                select(-artist_id, -explicit, -type, -track_preview_url, -artists, -album_images, 
-                       -is_local, -analysis_url, -track_href, -disc_number, -available_markets,
-                       -album_release_date_precision, -track_uri)
+### Introduction
 
-room_for_squares <- get_album_tracks(
-  "3yHOaiXecTJVUdn7mApZ48",
-  limit = 20,
-  offset = 0,
-  market = NULL,
-  authorization = get_spotify_access_token(),
-  include_meta_info = FALSE
-)
+My corpus is on John Mayer, specifically his albums. I am an avid listener so studying and analyzing his music would of course be an interesting topic for me. With eight studio albums, John Mayer has a well-rounded discography that arguably spans across many different genres such as blues, pop, rock, folk, and country. This leaves significant room for analysis into his music. Having a discography that spans across various genres allows for different directions to be taken in terms of investigation. The first possibility is to look into how John Mayer's music has changed over time. The second is that a comparison can be made between one or all of his studio albums and their possible respective genres to conclude how John Mayer adheres to said genre. And lastly, is to conclude if John Mayer follows any trends in his music that allow us to possibly define John Mayer's main genre of music.
 
-track_info_rfs <- get_track_audio_features(room_for_squares$id)
-track_info_rfs
+![](images/rfs.jpeg){width=12%} ![](images/hvt.jpg){width=12%} ![](images/con.png){width=12%} ![](images/bts.jpeg){width=12%} ![](images/bnr.jpeg){width=12%} ![](images/pdv.jpeg){width=12%} ![](images/sfe.jpeg){width=12%} ![](images/sbr.jpeg){width=12%}
+Based on the time frame and requirements of this assignment, I've chosen to do the second possibility mentioned above. Specifically, I will compare John Mayer’s Sob Rock album to 80s music. In order to do so I've chosen two different ways to complete this comparison. The first is to compare it to a Spotify playlist of 80’s hits and the second is to a specific subgenre of 80s music that the music on Sob Rock could match. The objective will essentially be to see how well John Mayer's Sob Rock album compares to actual 80s music.  An important consideration to note is that John Mayer obviously did not produce Sob Rock with the intent of replicating 80s music. The aim therefore is to see if and how well it adheres to the 80s genre and subgenre.
 
-heavier_things <- get_album_tracks(
-  "6WivmTXugLZLmAWnZhlz7g",
-  limit = 20,
-  offset = 0,
-  market = NULL,
-  authorization = get_spotify_access_token(),
-  include_meta_info = FALSE
-)
+Using the Spotify API, data from each song off of each album can be pulled and analyzed. Important considerations must be accounted for first and foremost. Although the Spotify API is a powerful tool for music analysis, it is not perfect in its analysis of music. Certain criteria are poorly measured or immeasurable for the Spotify API, elements such as emotions and lyricism are difficult to analyze through the software. However, there are tools that will represent the data and findings that are sought after.
 
-track_info_hvt <- get_track_audio_features(heavier_things$id)
-track_info_hvt
+### A Deep Dive into Sob Rock
 
-continuum <- get_album_tracks(
-  "1Xsprdt1q9rOzTic7b9zYM",
-  limit = 20,
-  offset = 0,
-  market = NULL,
-  authorization = get_spotify_access_token(),
-  include_meta_info = FALSE
-)
+![](images/sob_rock.jpeg){width=30%, height=30%}
 
-track_info_con <- get_track_audio_features(continuum$id)
-track_info_con
+***
+Various magazines, including [Guitar.com](https://guitar.com/news/music-news/john-mayer-80s-retro-dna-sob-rock/) and [Variety magazine](https://variety.com/2021/music/news/john-mayer-sob-rock-album-review-1235021593/), have already compared the album to 80's pop music based on its tone as well as its aesthetic. This part of the research will focus on Sob Rock as a whole as well as analyze some individual songs to compare to 80's pop music. Furthermore, the style of Sob Rock has been mentioned in articles about the subgenre of 80's pop called ['Divorcecore'](https://www.esquire.com/entertainment/a26576951/what-is-divorcecore/). 
 
-battle_studies <- get_album_tracks(
-  "1V5vQRMWTNGmqwxY8jMVou",
-  limit = 20,
-  offset = 0,
-  market = NULL,
-  authorization = get_spotify_access_token(),
-  include_meta_info = FALSE
-)
+First will be an analysis and comparison of Sob Rock and  general 80s pop music to see how John Mayer's album lines up with the 80's pop genre. Second will be an in-depth analysis of various songs from the album with songs from the 'Divorcecore' subgenre. The songs mentioned in the [Esquire](https://www.esquire.com/entertainment/a26576951/what-is-divorcecore/) article will be used to compare the Sob Rock tracks to. In order to utilize the Spotify API, a playlist called "DivorceCore" has been provided by Dave Holmes, writer of the Esquire article.
 
-track_info_bts <- get_track_audio_features(battle_studies$id)
-track_info_bts
+### Comparing Sob Rock as a whole to general pop music from the 80s
 
-born_and_raised <- get_album_tracks(
-  "6S0BIiWtnqU0PtumXMpin0",
-  limit = 20,
-  offset = 0,
-  market = NULL,
-  authorization = get_spotify_access_token(),
-  include_meta_info = FALSE
-)
-
-track_info_bnr <- get_track_audio_features(born_and_raised$id)
-track_info_bnr
-
-paradise_valley <- get_album_tracks(
-  "712VoD72K500yLhhgqCyVe",
-  limit = 20,
-  offset = 0,
-  market = NULL,
-  authorization = get_spotify_access_token(),
-  include_meta_info = FALSE
-)
-
-track_info_pdv <- get_track_audio_features(paradise_valley$id)
-track_info_pdv
-
-the_search_for_everything <- get_album_tracks(
-  "0jZFu2tihRJ65iYAo0oOtP",
-  limit = 20,
-  offset = 0,
-  market = NULL,
-  authorization = get_spotify_access_token(),
-  include_meta_info = FALSE
-)
-
-track_info_sfe <- get_track_audio_features(the_search_for_everything$id)
-track_info_sfe
-
+```{r}
 sob_rock <- get_album_tracks(
   "2JmfwvRDitJlTUoLCkp61z",
   limit = 20,
@@ -131,216 +59,10 @@ sob_rock <- get_album_tracks(
   include_meta_info = FALSE
 )
 
-track_info_sbr <- get_track_audio_features(sob_rock$id)
-track_info_sbr
-
-mayer_raw <- rbind(track_info_rfs, track_info_hvt, track_info_con, track_info_bts, 
-               track_info_bnr, track_info_pdv, track_info_sfe, track_info_sbr)
-
-rfs <- track_info_rfs %>%
-  summarise(room_for_squares$data, 
-            meanDanceability = mean(danceability), 
-            meanEnergy = mean(energy),
-            meanValence = mean(valence),
-            meanDuration = mean(duration_ms))
-
-hvt <- track_info_hvt %>%
-  summarise(heavier_things$data, 
-            meanDanceability = mean(danceability), 
-            meanEnergy = mean(energy),
-            meanValence = mean(valence),
-            meanDuration = mean(duration_ms))
-
-con <- track_info_con %>%
-  summarise(continuum$data, 
-            meanDanceability = mean(danceability), 
-            meanEnergy = mean(energy),
-            meanValence = mean(valence),
-            meanDuration = mean(duration_ms))
-
-bts <- track_info_bts %>%
-  summarise(battle_studies$data, 
-            meanDanceability = mean(danceability), 
-            meanEnergy = mean(energy),
-            meanValence = mean(valence),
-            meanDuration = mean(duration_ms))
-
-bnr <- track_info_bnr %>%
-  summarise(born_and_raised$data, 
-            meanDanceability = mean(danceability), 
-            meanEnergy = mean(energy),
-            meanValence = mean(valence),
-            meanDuration = mean(duration_ms))
-
-pdv <- track_info_pdv %>%
-  summarise(paradise_valley$data, 
-            meanDanceability = mean(danceability), 
-            meanEnergy = mean(energy),
-            meanValence = mean(valence),
-            meanDuration = mean(duration_ms))
-
-sfe <- track_info_sfe %>%
-  summarise(the_search_for_everything$data, 
-            meanDanceability = mean(danceability), 
-            meanEnergy = mean(energy),
-            meanValence = mean(valence),
-            meanDuration = mean(duration_ms))
-
-sbr <- track_info_sbr %>%
-  summarise(sob_rock$data, 
-            meanDanceability = mean(danceability), 
-            meanEnergy = mean(energy),
-            meanValence = mean(valence),
-            meanDuration = mean(duration_ms))
-
-mayer_average <- rbind(rfs, hvt, con, bts, bnr, pdv, sfe, sbr)
-
-```
-
-Overview
-============================================
-
-### Introduction
-
-My corpus is on John Mayer, specifically his albums. I am an avid listener so studying and analyzing his music would of course be an interesting topic for me. With eight studio albums, John Mayer has a well-rounded discography that arguably spans across many different genres such as blues, pop, rock, folk, and country. This leaves significant room for analysis into his music. Having a discography that spans across various genres allows for different directions to be taken in terms of investigation. The first possibility is to look into how John Mayer's music has changed over time. The second is that a comparison can be made between one or all of his studio albums and their possible respective genres to conclude how John Mayer adheres to said genre. And lastly, is to conclude if John Mayer follows any trends in his music that allow us to possibly define John Mayer's main genre of music.
-
-![](images/rfs.jpeg){width=12%} ![](images/hvt.jpg){width=12%} ![](images/con.png){width=12%} ![](images/bts.jpeg){width=12%} ![](images/bnr.jpeg){width=12%} ![](images/pdv.jpeg){width=12%} ![](images/sfe.jpeg){width=12%} ![](images/sbr.jpeg){width=12%}
-
-The objective will essentially aim to anaylze John Mayer's music in various ways. The first level of analysis will be to explore his discography in search of any possible trends. The second level will be to identify how well one or each of John Mayer's albums adhere to their possible genres. The conclusion of this study will be to see if it is possible to summarize John Mayer's music in a single genre. An important consideration to note is that John Mayer obviously did not produce each album with the intent of sticking to a single genre. The aim therefore is to see if and how well each album adheres to a respective genre. In addition to this, an analysis will be made on Spotify's "John Mayer Radio" playlist as it is a representation of what Spotify considers to be similar to John Mayer's music. This will be my second level of analysis. This analysis will show who Spotify associates John Mayer with and it might reveal what, based on which musical elements, this association is based on.
-
-Using the Spotify API, data from each song off of each album can be pulled and analyzed. Important considerations must be accounted for first and foremost. Although the Spotify API is a powerful tool for music analysis, it is not perfect in its analysis of music. Certain criteria are poorly measured or immeasurable for the Spotify API, elements such as emotions and lyricism are difficult to analyze through the software.
-
-Preliminary Analysis {.storyboard}
-============================================
-
-### Level One Analysis: An Exploratory Analysis of John Mayer's Discography 
-
-```{r}
-ggplot(dataset_uno, aes(x = album_release_year, y = valence, size = mode, color = energy)) +
-  geom_point(alpha = 0.7) +
-  labs(title = "Graph 1: Valence of John Mayer's music over Time",
-       position = "center",
-       x = "Year",
-       y = "Valence",
-       size = "Mode",
-       color = "Energy")
-
-ggplot(dataset_uno, aes(x = speechiness, y = instrumentalness, size = danceability, color = tempo)) +
-  geom_point(alpha = 0.7) +
-  scale_y_log10() +
-  scale_x_log10() +
-  labs(title = "Graph 2: Speechiness vs Instrumentalness of John Mayer's discography",
-       x = "Speechiness",
-       y = "Instrumentalness",
-       size = "Danceability",
-       color = "tempo")
-```
-
-***
-
-Graph 1 is a representation of the valence of John Mayer's entire discography over time. Based on the data points alone, it is clear that there is little to no correlation or patterns. The only pattern visible in Graph 1 may be shown in the Energy variable. Though weak, a lower amount of energy a track has tends to be lower in valence as well. This graph also shows variety of each album through the colour of each point in each set on the x-axis. Each vertical cluster represents an individual album. Browsing each cluster shows that each album has a different overall energy. An example of this are the first cluster in 1999 and the 2004 clusters. The 1999 cluster, "Inside Wants Out", seems to be more grey while the 2004 clusters, "As/Is", are show to be brighter in colour representing a higher overall energy. This is probably because the 2004 clusters are live albums and therefore could result in a higher energy.
-
-Graph 2 is a representation of the speechiness and instrumentalness of John Mayer’s discography. In terms of instrumentalness the data does not vary as data points can be seen across the y-axis. However when looking at speechiness despite the lack of variety there seems to be a trend at the 0.03 mark on them x-axis. This trend at the 0.03 mark on the x-axis demonstrates a consistency that John Mayer has in the writing/producing of his music as well as the balance of vocals to instruments.
-
-### The Valence of Each Album
-
-```{r}
-mayer_filtered <- dataset_due %>%
-  filter(album_name == c("Room For Squares", "Heavier Things", "Continuum", "Battle Studies",
-                         "Born and Raised", "Paradise Valley", "The Search For Everything", "Sob Rock"))
-
-ggplot(mayer_filtered, aes(x = album_name, y = valence)) +
-  geom_boxplot() +
-  labs(title = "Valence of Each John Mayer Album",
-       x = "Album",
-       y = "Valence")
-
-```
-
-***
-
-
-### The Energy of Each Album
-```{r}
-ggplot(mayer_average, aes(x = meanValence, y = meanEnergy, size = meanDuration, color = meanDanceability)) +
-  geom_point(alpha = 1) +
-  labs(title = "Energy vs Valence of Each Album",
-       x = "Mean Valence",
-       y = "Mean Energy",
-       size = " Mean Duration",
-       color = "Mean Danceability")
-```
-
-The third stage of the exploratory analysis is a visualization of the Mean of the key variables used in the previous stage of the exploratory level of analysis. 
-
-Comparisons {.storyboard}
-============================================
-
-### Level Two Analysis: Anaylzing Artists suggested by the Spotify algorithms
-![](images/jmradio.png){width=30%}
-
-***
-As mentioned, the second level of analysis will be to analyze the Spotify-generated playlist "John Mayer Radio in order to see how Spotify categorizes and compares John Mayer's music to other artists and genres.
-
-### How does Spotify categorise John Mayer's music in comparison to other artists?
-```{r}
-ggplot(mayer_average, aes(x = meanValence, y = meanEnergy, size = meanDuration, color = meanDanceability)) +
-  geom_point(alpha = 1) +
-  geom_smooth() +
-  labs(title = "Energy vs Valence of Each Album",
-       x = "Mean Valence",
-       y = "Mean Energy",
-       size = " Mean Duration",
-       color = "Mean Danceability")
-```
-```{r}
-john_mayer_radio <- get_playlist_tracks(
-  "37i9dQZF1E4zpfzijbifCi", 
-  fields = NULL, 
-  limit = 100, 
-  offset = 0,
-  market = NULL, 
-  authorization = get_spotify_access_token(), 
-  include_meta_info = FALSE
-)
-
-track_info_radio <- get_playlist_audio_features("11149714474", "37i9dQZF1E4zpfzijbifCi", 
-                                                      authorization = get_spotify_access_token()) %>%
+track_info_sbr <- get_track_audio_features(sob_rock$id) %>%
   select(danceability, energy, key, loudness, mode, speechiness, 
-         acousticness, instrumentalness, liveness, valence, tempo, 
-         track.id, time_signature, track.duration_ms, track.name, 
-         track.popularity, track.artists)
-
-ggplot(track_info_radio, aes(x = valence, y = energy, size = track.duration_ms, color = danceability)) +
-  geom_point(alpha = 0.7) +
-  labs(title = "Energy vs Valence of John Mayer Radio",
-       x = "Valence",
-       y = "Energy",
-       size = " Duration",
-       color = "Danceability")
-```
-
-
-Sob Rock {.storyboard}
-============================================
-
-### Level Three Analysis: Deep Dive into Sob Rock
-
-![](images/sob_rock.jpeg){width=30%, height=30%}
-
-***
-After the initial exploratory analysis of John Mayer's studio albums, his last studio album "Sob Rock" seemed like a good choice to single and analyze further. Various magazines, including [Guitar.com](https://guitar.com/news/music-news/john-mayer-80s-retro-dna-sob-rock/) and [Variety magazine](https://variety.com/2021/music/news/john-mayer-sob-rock-album-review-1235021593/), have already compared the album to 80's pop music based on its tone as well as its aesthetic. 
-
-### Comparing Sob Rock as a whole to general pop music from the 80s
-
-```{r}
-ggplot(track_info_sbr, aes(x = tempo, y = energy, color = instrumentalness)) +
-  geom_point() +
-  geom_smooth() +
-  labs(title = "Energy & Tempo of Sob Rock",
-       x = "Tempo",
-       y = "Energy",
-       color = "Instrumentalness")
+         acousticness, instrumentalness, liveness, valence, tempo,
+         time_signature, duration_ms)
 
 eighties_hits_analyzed <- get_playlist_audio_features("11149714474", "37i9dQZF1DXb57FjYWz00c", 
                                                       authorization = get_spotify_access_token()) %>%
@@ -349,7 +71,57 @@ eighties_hits_analyzed <- get_playlist_audio_features("11149714474", "37i9dQZF1D
          track.id, time_signature, track.duration_ms, track.name, 
          track.popularity, track.artists)
 
-ggplot(eighties_hits_analyzed, aes(x = tempo, y = energy, color = instrumentalness)) +
+
+ggplot(track_info_sbr, aes(x = tempo, y = energy, color = instrumentalness)) +
+  geom_point() +
+  geom_smooth() +
+  labs(title = "Energy & Tempo of Sob Rock",
+       x = "Tempo",
+       y = "Energy",
+       color = "Instrumentalness")
+
+ggplot(eighties_hits_analyzed, aes(x = tempo, y = energy, color = instrumentalness, label = track.name)) +
+  geom_point() +
+  geom_smooth() +
+  labs(title = "Energy & Tempo of 80's Hits",
+       x = "Tempo",
+       y = "Energy",
+       color = "Instrumentalness")
+```
+
+***
+The two graphs are a side-by-side representation of the energy, tempo and instrumentalness of the tracks on Sob Rock and Spotify's "80's Hits" playlist. These variables seem appropriate for determining the 'intensity' of a track. In addition to energy and tempo instrumentalness is another variable that has been added to the two graphs on the left. Not only do we see data points on the scatter plots a a curved line of best fit has been added as well to try and better show trends in the data.When comparing the plots is important to remember that a limiting factor of the first scatter plot is that there aren’t enough plots due to the limited number of tracks on the Sob Rock album. 
+By comparing the two scatter plots it is clear that they do not share many similarities as demonstrated by comparing the two trend lines in each scatter plot. The line in the first scatter plot shows a somewhat upside-down W shape where it starts slow goes up high has a small upside-down bell curve and ends low. The trendline in the second scatter plot starts high dips down comes back up and ends significantly lower. In the first scatter plot this shows that a track tends to have a higher energy when it has a tempo of around 100 bpm or a 130 bpm. For the second scatter plot the trend line suggests that energy is highest when the bpm of a track is 90 or 140. Although this is different to the first scatterplot,  this does fall within +/- 10 bpm margin which is still moderately significant.
+
+
+### Comparing Sob Rock to "DivorceCore"
+
+```{r}
+divorcecore <- get_playlist_tracks(
+  "16K3PWAPbSxG539FntLQ0e",
+  limit = 100,
+  offset = 0,
+  market = NULL,
+  authorization = get_spotify_access_token(),
+  include_meta_info = FALSE
+)
+
+divorcecore_analyzed <- get_playlist_audio_features("11149714474", "16K3PWAPbSxG539FntLQ0e", 
+                                                      authorization = get_spotify_access_token()) %>%
+  select(danceability, energy, key, loudness, mode, speechiness, 
+         acousticness, instrumentalness, liveness, valence, tempo, 
+         track.id, time_signature, track.duration_ms, track.name, 
+         track.popularity, track.artists)
+
+ggplot(divorcecore_analyzed, aes(x = tempo, y = energy, color = instrumentalness)) +
+  geom_point() +
+  geom_smooth() +
+  labs(title = "Energy & Tempo of DivorceCore",
+       x = "Tempo",
+       y = "Energy",
+       color = "Instrumentalness")
+
+ggplot(track_info_sbr, aes(x = tempo, y = energy, color = instrumentalness)) +
   geom_point() +
   geom_smooth() +
   labs(title = "Energy & Tempo of Sob Rock",
@@ -357,156 +129,242 @@ ggplot(eighties_hits_analyzed, aes(x = tempo, y = energy, color = instrumentalne
        y = "Energy",
        color = "Instrumentalness")
 ```
+
 ***
-The two graphs are a side-by-side representation of the energy, tempo and instrumentalness of the tracks on Sob Rock and Spotify's "80's Hits" playlist. The variables energy, tempo and instrumentalness were chosen as they were deemed 
+On the previous page, the energy and tempo of the Sob Rock tracks and the 80’s hits playlist tracks were compared. This showed limited similarity between the two. However, when we compare the Sob Rock tracks to the tracks of the DivorceCore playlist a somewhat similar pattern can be seen. Just by looking at the shape of these trend lines on the scatter plots we can see a similarity in the energy-tempo relationship. Although the shape of the trend lines are similar, the two scatter plots do differ on basis of where on the x-axis the peaks in the trend lines are. As shown on the Sob Rock scatter plot, the peaks were around the 90 and 130 bpm. On the divorce core scatter plot the peaks are just under 100 bpm and around the 160 bpm mark. 
 
-### Comparing Sob Rock to "Divorcecore"
+By comparing the scatter plots of both the 80’s Hits playlist and the DivorceCore playlist to the Sob Rock tracks some analysis can be made. The Sob Rock tracks share similarities with both the 80’s Hits playlist and the DivorceCore playlist. In terms of tempo, the Sob Rock tracks are relatively similar to the 80’s Hits tracks while the Sob Rock and DivorceCore tracks are similar in energy. 
 
-
-
-### Analysis of "Shot in the Dark"
+### Looking at how the tracks are clustered
 
 ```{r}
-shot_in_the_dark <-
-  get_tidy_audio_analysis("239yM7BAQ2CkNc61ogPGXo") %>%
-  select(segments) %>%
-  unnest(segments) %>%
-  select(start, duration, pitches)
-
-shot_in_the_dark %>%
-  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
-  compmus_gather_chroma() %>% 
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = pitch_class,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", 
-       y = NULL, 
-       fill = "Magnitude",
-       title = "Chromagram of Shot in the Dark") +
-  theme_minimal() +
-  scale_fill_viridis_c()
+all_tracks <- 
+    get_playlist_audio_features("11149714474", "16K3PWAPbSxG539FntLQ0e") %>% 
+    add_audio_analysis %>% 
+    mutate(
+        segments = 
+            map2(segments, key, compmus_c_transpose)) %>% 
+    mutate(
+        pitches = 
+            map(segments, 
+                compmus_summarise, pitches, 
+                method = 'mean', norm = 'manhattan'),
+        timbre =
+            map(
+                segments,
+                compmus_summarise, timbre,
+                method = 'mean')) %>% 
+    mutate(pitches = map(pitches, compmus_normalise, 'clr')) %>% 
+    mutate_at(vars(pitches, timbre), map, bind_rows) %>% 
+    unnest(cols = c(pitches, timbre))
+all_tracks_juice <- 
+    recipe(track.name ~
+               danceability +
+               energy +
+               loudness +
+               speechiness +
+               acousticness +
+               instrumentalness +
+               liveness +
+               valence +
+               tempo +
+               duration +
+               C + `C#|Db` + D + `D#|Eb` +
+               E + `F` + `F#|Gb` + G +
+               `G#|Ab` + A + `A#|Bb` + B +
+               c01 + c02 + c03 + c04 + c05 + c06 +
+               c07 + c08 + c09 + c10 + c11 + c12,
+           data = all_tracks) %>% 
+    step_range(all_predictors()) %>% 
+    prep(all_tracks %>% mutate(track.name = str_trunc(track.name, 20))) %>% 
+    juice %>%
+    column_to_rownames('track.name')
+ggheatmap(
+    all_tracks_juice,
+    hclustfun = protoclust,
+    dist_method = 'manhattan'
+)
 ```
+
+***
+The dendrogram on the left shows how the tracks on the DivorceCore playlist have been clustered. The playlist includes a John Mayer song which means that observing how this song is categorized will indicate if Sob Rock could be consistent with 80’s music, specifically DivorceCore songs. The John Mayer song in question is "I Guess I Just Feel Like". 
+
+By looking at the martix, there doesn't appear to be any sort of pattern that emerges. By looking along the right side of the dendrogram three clear clusters of songs can be observed. The clusters along the x-axis are not as clearcut. It can be argued that there are six clusters, with the biggest being the largest grouping of yellow on the bottom of the matrix. When observing the John Mayer within this dataset, it fits in well. The magnitude of most of the variables is shown to be similar to three or four other songs.
+
+### Are there any similarities in chroma?
 ```{r}
-circshift <- function(v, n) {
-  if (n == 0) v else c(tail(v, n), head(v, -n))
-}
-
-#      C     C#    D     Eb    E     F     F#    G     Ab    A     Bb    B
-major_chord <-
-  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    0,    0)
-minor_chord <-
-  c(   1,    0,    0,    1,    0,    0,    0,    1,    0,    0,    0,    0)
-seventh_chord <-
-  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    1,    0)
-
-major_key <-
-  c(6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88)
-minor_key <-
-  c(6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17)
-
-chord_templates <-
-  tribble(
-    ~name, ~template,
-    "Gb:7", circshift(seventh_chord, 6),
-    "Gb:maj", circshift(major_chord, 6),
-    "Bb:min", circshift(minor_chord, 10),
-    "Db:maj", circshift(major_chord, 1),
-    "F:min", circshift(minor_chord, 5),
-    "Ab:7", circshift(seventh_chord, 8),
-    "Ab:maj", circshift(major_chord, 8),
-    "C:min", circshift(minor_chord, 0),
-    "Eb:7", circshift(seventh_chord, 3),
-    "Eb:maj", circshift(major_chord, 3),
-    "G:min", circshift(minor_chord, 7),
-    "Bb:7", circshift(seventh_chord, 10),
-    "Bb:maj", circshift(major_chord, 10),
-    "D:min", circshift(minor_chord, 2),
-    "F:7", circshift(seventh_chord, 5),
-    "F:maj", circshift(major_chord, 5),
-    "A:min", circshift(minor_chord, 9),
-    "C:7", circshift(seventh_chord, 0),
-    "C:maj", circshift(major_chord, 0),
-    "E:min", circshift(minor_chord, 4),
-    "G:7", circshift(seventh_chord, 7),
-    "G:maj", circshift(major_chord, 7),
-    "B:min", circshift(minor_chord, 11),
-    "D:7", circshift(seventh_chord, 2),
-    "D:maj", circshift(major_chord, 2),
-    "F#:min", circshift(minor_chord, 6),
-    "A:7", circshift(seventh_chord, 9),
-    "A:maj", circshift(major_chord, 9),
-    "C#:min", circshift(minor_chord, 1),
-    "E:7", circshift(seventh_chord, 4),
-    "E:maj", circshift(major_chord, 4),
-    "G#:min", circshift(minor_chord, 8),
-    "B:7", circshift(seventh_chord, 11),
-    "B:maj", circshift(major_chord, 11),
-    "D#:min", circshift(minor_chord, 3)
-  )
-
-key_templates <-
-  tribble(
-    ~name, ~template,
-    "Gb:maj", circshift(major_key, 6),
-    "Bb:min", circshift(minor_key, 10),
-    "Db:maj", circshift(major_key, 1),
-    "F:min", circshift(minor_key, 5),
-    "Ab:maj", circshift(major_key, 8),
-    "C:min", circshift(minor_key, 0),
-    "Eb:maj", circshift(major_key, 3),
-    "G:min", circshift(minor_key, 7),
-    "Bb:maj", circshift(major_key, 10),
-    "D:min", circshift(minor_key, 2),
-    "F:maj", circshift(major_key, 5),
-    "A:min", circshift(minor_key, 9),
-    "C:maj", circshift(major_key, 0),
-    "E:min", circshift(minor_key, 4),
-    "G:maj", circshift(major_key, 7),
-    "B:min", circshift(minor_key, 11),
-    "D:maj", circshift(major_key, 2),
-    "F#:min", circshift(minor_key, 6),
-    "A:maj", circshift(major_key, 9),
-    "C#:min", circshift(minor_key, 1),
-    "E:maj", circshift(major_key, 4),
-    "G#:min", circshift(minor_key, 8),
-    "B:maj", circshift(major_key, 11),
-    "D#:min", circshift(minor_key, 3)
-  )
-
-shot_in_the_dark_chordogram <-
-  get_tidy_audio_analysis("239yM7BAQ2CkNc61ogPGXo") %>%
-  compmus_align(sections, segments) %>%
-  select(sections) %>%
-  unnest(sections) %>%
+shouldnt_matter_timbre <-
+  get_tidy_audio_analysis("3MthJpM1IEYp2ulZe00LvP") %>%
+  compmus_align(bars, segments) %>%
+  select(bars) %>%
+  unnest(bars) %>%
   mutate(
     pitches =
       map(segments,
-          compmus_summarise, pitches,
-          method = "mean", norm = "manhattan"
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) %>%
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
       )
   )
-shot_in_the_dark_chordogram %>% 
-  compmus_match_pitch_template(
-    key_templates,        
-    method = "euclidean",
-    norm = "manhattan"    
-  ) %>%
+bind_rows(
+  shouldnt_matter_timbre %>% 
+    compmus_self_similarity(pitches, "aitchison") %>% 
+    mutate(d = d / max(d), type = "Chroma"),
+) %>%
+  mutate() %>% 
   ggplot(
-    aes(x = start + duration / 2, width = duration, y = name, fill = d)
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
   ) +
   geom_tile() +
-  scale_fill_viridis_c(guide = "none") +
-  theme_minimal() +
-  labs(x = "Time (s)", 
-       y = "",
-       title = "Chordogram of Shot in the Dark")
+  coord_fixed() +
+  facet_wrap(~type) +
+  scale_fill_viridis_c(option = "E", guide = "none") +
+  theme_classic() + 
+  labs(x = "", y = "", title = "Cepstrogram of Shouldn't Matter but It Does")
+
+one_step_timbre <-
+  get_tidy_audio_analysis("3ICZte49haM8ID7H6LSSjb") %>%
+  compmus_align(bars, segments) %>%
+  select(bars) %>%
+  unnest(bars) %>%
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) %>%
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  )
+bind_rows(
+  one_step_timbre %>% 
+    compmus_self_similarity(pitches, "aitchison") %>% 
+    mutate(d = d / max(d), type = "Chroma"),
+) %>%
+  mutate() %>% 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  facet_wrap(~type) +
+  scale_fill_viridis_c(option = "E", guide = "none") +
+  theme_classic() + 
+  labs(x = "", y = "", title = "Cepstrogram of One Step Up")
 ```
 
-*** 
-The chromagram to the left shows a spectral analysis of the song "Shot in the Dark", which contains many elements that are associated with the 80s era of music. As shown by the graphic, the song is in D major.
+***
+The two self-similarity matrices on the left representative of two songs, the left one from John Mayer’s album and the other from the DivorceCore playlist. By looking at both individually patterns can be seen for each. in the left one the structure of the song is quite clear while structure of One Step Up is quite subtle. When comparing the two, some similarities in patterns within each visualisation can be seen. The similarities amongst the two visualisations are weak however and will lead to a further investigation into timbre rather than chroma.
+
+### Self-Smiliarity Matrix to demonstrate timbre 
+```{r}
+shouldnt_matter_timbre <-
+  get_tidy_audio_analysis("3MthJpM1IEYp2ulZe00LvP") %>%
+  compmus_align(bars, segments) %>%
+  select(bars) %>%
+  unnest(bars) %>%
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) %>%
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  )
+bind_rows(
+  shouldnt_matter_timbre %>% 
+    compmus_self_similarity(timbre, "euclidean") %>% 
+    mutate(d = d / max(d), type = "Timbre")
+) %>%
+  mutate() %>% 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  facet_wrap(~type) +
+  scale_fill_viridis_c(option = "E", guide = "none") +
+  theme_classic() + 
+  labs(x = "", y = "", title = "Cepstrogram of Shouldn't Matter but It Does")
+
+one_step_timbre <-
+  get_tidy_audio_analysis("3ICZte49haM8ID7H6LSSjb") %>%
+  compmus_align(bars, segments) %>%
+  select(bars) %>%
+  unnest(bars) %>%
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) %>%
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  )
+bind_rows(
+  one_step_timbre %>% 
+    compmus_self_similarity(timbre, "euclidean") %>% 
+    mutate(d = d / max(d), type = "Timbre")
+) %>%
+  mutate() %>% 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  facet_wrap(~type) +
+  scale_fill_viridis_c(option = "E", guide = "none") +
+  theme_classic() + 
+  labs(x = "", y = "", title = "Cepstrogram of One Step Up")
+```
+
+***
+The analysis here was sparked by having listened through the songs presented in the *Esquire* article and noticing a similarity in timbre between "One Step Up" by Bruce Springsteen and "Shouldn't Matter but It Does" by John Mayer. Timbre is a musical element that some may argue is too vague to describe objectively or a variable that a program such as the Spotify API cannot understand accurately. By using self-similarity models a representation of timbre, through mel frequency cepstral coefficients (MFCCs), can be presented for comparison and analysis. The two self-similarity models show the MFCCs of the two songs in question.
+
+The first set of ceptstrograms shows that the timbre of the song is fairly consistent with only a handful of noticeable changes. The main one being around 125s (2:05). This not only shows a different section in the structure but also a new "sound" being used in the song. 
