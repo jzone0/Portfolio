@@ -221,12 +221,26 @@ ggplot(dataset_uno, aes(x = album_release_year, y = valence, size = mode, color 
   labs(title = "Graph 1: Valence of John Mayer's music over Time",
        position = "center",
        x = "Year",
-       y = "Valence")
+       y = "Valence",
+       size = "Mode",
+       color = "Energy")
+
+ggplot(dataset_uno, aes(x = speechiness, y = instrumentalness, size = danceability, color = tempo)) +
+  geom_point(alpha = 0.7) +
+  scale_y_log10() +
+  scale_x_log10() +
+  labs(title = "Graph 2: Speechiness vs Instrumentalness of John Mayer's discography",
+       x = "Speechiness",
+       y = "Instrumentalness",
+       size = "Danceability",
+       color = "tempo")
 ```
 
 ***
 
-Graph 1 is a representation of the valence of John Mayer's entire discography over time. Based on the data points alone, it is clear that there is little to no correlation or patterns. The only pattern visible in Graph 1 may be shown in the Energy variable. Though weak, a lower amount of energy a track has tends to be lower in valence as well. 
+Graph 1 is a representation of the valence of John Mayer's entire discography over time. Based on the data points alone, it is clear that there is little to no correlation or patterns. The only pattern visible in Graph 1 may be shown in the Energy variable. Though weak, a lower amount of energy a track has tends to be lower in valence as well. This graph also shows variety of each album through the colour of each point in each set on the x-axis. Each vertical cluster represents an individual album. Browsing each cluster shows that each album has a different overall energy. An example of this are the first cluster in 1999 and the 2004 clusters. The 1999 cluster, "Inside Wants Out", seems to be more grey while the 2004 clusters, "As/Is", are show to be brighter in colour representing a higher overall energy. This is probably because the 2004 clusters are live albums and therefore could result in a higher energy.
+
+Graph 2 is a representation of the speechiness and instrumentalness of John Mayer’s discography. In terms of instrumentalness the data does not vary as data points can be seen across the y-axis. However when looking at speechiness despite the lack of variety there seems to be a trend at the 0.03 mark on them x-axis. This trend at the 0.03 mark on the x-axis demonstrates a consistency that John Mayer has in the writing/producing of his music as well as the balance of vocals to instruments.
 
 ### The Valence of Each Album
 
@@ -317,18 +331,42 @@ Sob Rock {.storyboard}
 ***
 After the initial exploratory analysis of John Mayer's studio albums, his last studio album "Sob Rock" seemed like a good choice to single and analyze further. Various magazines, including [Guitar.com](https://guitar.com/news/music-news/john-mayer-80s-retro-dna-sob-rock/) and [Variety magazine](https://variety.com/2021/music/news/john-mayer-sob-rock-album-review-1235021593/), have already compared the album to 80's pop music based on its tone as well as its aesthetic. 
 
-### Sob Rock as a whole
+### Comparing Sob Rock as a whole to general pop music from the 80s
 
 ```{r}
 ggplot(track_info_sbr, aes(x = tempo, y = energy, color = instrumentalness)) +
   geom_point() +
-  geom_smooth()
+  geom_smooth() +
+  labs(title = "Energy & Tempo of Sob Rock",
+       x = "Tempo",
+       y = "Energy",
+       color = "Instrumentalness")
 
+eighties_hits_analyzed <- get_playlist_audio_features("11149714474", "37i9dQZF1DXb57FjYWz00c", 
+                                                      authorization = get_spotify_access_token()) %>%
+  select(danceability, energy, key, loudness, mode, speechiness, 
+         acousticness, instrumentalness, liveness, valence, tempo, 
+         track.id, time_signature, track.duration_ms, track.name, 
+         track.popularity, track.artists)
+
+ggplot(eighties_hits_analyzed, aes(x = tempo, y = energy, color = instrumentalness)) +
+  geom_point() +
+  geom_smooth() +
+  labs(title = "Energy & Tempo of Sob Rock",
+       x = "Tempo",
+       y = "Energy",
+       color = "Instrumentalness")
 ```
+***
+The two graphs are a side-by-side representation of the energy, tempo and instrumentalness of the tracks on Sob Rock and Spotify's "80's Hits" playlist. The variables energy, tempo and instrumentalness were chosen as they were deemed 
 
-### Comparing "Shot in the Dark" to 80's pop
+### Comparing Sob Rock to "Divorcecore"
 
-```{r, column}
+
+
+### Analysis of "Shot in the Dark"
+
+```{r}
 shot_in_the_dark <-
   get_tidy_audio_analysis("239yM7BAQ2CkNc61ogPGXo") %>%
   select(segments) %>%
@@ -354,7 +392,7 @@ shot_in_the_dark %>%
   theme_minimal() +
   scale_fill_viridis_c()
 ```
-```{r, fig.width=5}
+```{r}
 circshift <- function(v, n) {
   if (n == 0) v else c(tail(v, n), head(v, -n))
 }

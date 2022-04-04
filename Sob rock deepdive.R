@@ -44,8 +44,47 @@ eighties_hits_analyzed <- get_playlist_audio_features("11149714474", "37i9dQZF1D
 
 eighties_hits_analyzed
 
+divorcecore <- get_playlist_tracks(
+  "16K3PWAPbSxG539FntLQ0e",
+  limit = 100,
+  offset = 0,
+  market = NULL,
+  authorization = get_spotify_access_token(),
+  include_meta_info = FALSE
+)
+
+divorcecore_analyzed <- get_playlist_audio_features("11149714474", "16K3PWAPbSxG539FntLQ0e", 
+                                                    authorization = get_spotify_access_token()) %>%
+  select(danceability, energy, key, loudness, mode, speechiness, 
+         acousticness, instrumentalness, liveness, valence, tempo, 
+         track.id, time_signature, track.duration_ms, track.name, 
+         track.popularity, track.artists)
+
+divorcecore_analyzed
+
 ggplot(eighties_hits_analyzed, aes(x = tempo, y = energy, color = instrumentalness)) +
   geom_point() 
+
+ggplot(divorcecore_analyzed, aes(x = tempo, y = energy, color = instrumentalness)) +
+  geom_point() 
+
+ggplot(eighties_hits_analyzed, aes(x = danceability)) +
+  geom_histogram(bins = 30) +
+  labs(title = "Danceability of 80's Hits",
+       x = "Danceability",
+       y = "Number of Songs")
+
+ggplot(divorcecore_analyzed, aes(x = danceability)) +
+  geom_histogram(bins = 30) +
+  labs(title = "Danceability of DivorceCore",
+       x = "Danceability",
+       y = "Number of Songs")
+
+ggplot(track_info_sbr, aes(x = danceability)) +
+  geom_histogram(bins = 30) +
+  labs(title = "Danceability of Sob Rock Tracks",
+       x = "Danceability",
+       y = "Number of Songs")
 
 shot_in_the_dark_chromagram <-
   get_tidy_audio_analysis("239yM7BAQ2CkNc61ogPGXo") %>%
@@ -173,10 +212,9 @@ shot_in_the_dark_chordogram %>%
     method = "euclidean",
     norm = "manhattan"    
   ) %>%
-  ggplot(
-    aes(x = start + duration / 2, width = duration, y = name, fill = d)
-  ) +
+  ggplot(aes(x = start + duration / 2, width = duration, y = name, fill = d)) +
   geom_tile() +
   scale_fill_viridis_c(guide = "none") +
   theme_minimal() +
   labs(x = "Time (s)", y = "")
+
